@@ -1,0 +1,245 @@
+Below is a detailed documentation of the entire script RandomSolve, explaining its purpose, architecture, and each key component in depth.
+
+⸻
+
+Detailed Documentation of the Cube Optimization Script
+
+1. Overview
+
+This script implements a parallelized, randomized optimization algorithm designed to incrementally improve the configuration of a cube (such as a Rubik’s Cube). It searches for move sequences that increase the number of correctly positioned pieces, comparing successive cube states by generating a canonical hash for duplicate detection. The script is organized into several modules including parameter management, cube state manipulation, candidate search, logging improvements, and multi-processing to speed up computations.
+
+⸻
+
+2. Purpose and Functionality
+
+The main goal of the script is to solve—or at least improve—the cube configuration in steps. It does so by:
+	•	Reading external parameters from a CSV file.
+	•	Loading the cube’s initial state from another CSV file.
+	•	Applying moves (which are defined in an external JSON mapping file) to alter the cube state.
+	•	Evaluating improvements by counting how many pieces are correctly positioned according to predefined targets.
+	•	Using randomized move sequences and a candidate search mechanism to try and boost the number of correctly placed pieces.
+	•	Avoiding duplicate work by using a canonical state hash to identify states that have already been processed.
+	•	Logging progress and results in CSV files and text logs.
+
+⸻
+
+3. Dependencies and File Structure
+
+Dependencies:
+	•	Python Standard Libraries:
+	•	json – for reading move mappings from a JSON file.
+	•	csv – for reading parameters, initial cube states, and writing logs.
+	•	random – to randomly select parameter sets and generate random move sequences.
+	•	time – to timestamp logs and measure runtime.
+	•	os – for path management and file existence checks.
+	•	concurrent.futures – for parallelizing the candidate search process using a process pool.
+	•	hashlib – for generating MD5 hashes used in canonical state computation.
+
+File Structure:
+	•	Parameter File: parameter_csv-Parameter.csv
+Contains multiple parameter sets with keys such as TOTAL_RUNS, MAX_ITERATIONS, MAX_MOVES_PER_SEQUENCE, TARGET_CORRECT_STONES, NO_IMPROVEMENT_THRESHOLD, and VARIABLITY.
+Note: The parameter CSV file is not translated and retains its original header names.
+	•	Cube State File: csv_export-StartPos.csv
+Contains the starting state of the cube represented as 54 color codes.
+	•	Move Mappings File: mappings.json
+Provides the mapping for how each move affects the cube (which pieces move where).
+	•	Logging Files:
+	•	Improvements.csv (the log of each improvement with detailed move sequences and the associated canonical hash)
+	•	Results.csv (a summary of each run, including runtime, final correct pieces, and move sequences)
+	•	Additionally, a separate text log file is created for each run with a name that encodes the date, run number, and key statistics.
+
+⸻
+
+4. Parameter Management
+
+Function: load_parameters_from_csv(filename="parameter_csv-Parameter.csv")
+	•	Purpose:
+Reads the configuration parameters from a CSV file.
+	•	Details:
+	•	The CSV file’s first row acts as a header where each column (beyond the first) corresponds to a parameter set (e.g., P1, P2, …).
+	•	A random parameter set is selected for each run.
+	•	For rows that have composite keys (for example, "MAX_ITERATIONS E1"), the key is split into a main key and a subkey. This allows different configurations for different cube levels.
+	•	Numeric values are cleaned by removing thousand separators and converting them into integers or floats.
+	•	Return:
+A tuple (parameters, chosen_set) where parameters is a nested dictionary of configuration values and chosen_set identifies the parameter set chosen.
+
+⸻
+
+5. Cube Representation and Target Definitions
+
+Cube Representation:
+	•	The cube is represented as a list of 54 elements. Each element corresponds to a color code.
+	•	The positions are defined based on a 0-indexed list but represent different faces of the cube (Front, Left, Up, Right, Down, Back).
+For example:
+	•	Front: indices 0–8 (positions 1-9)
+	•	Left: indices 9–17 (positions 10-18)
+	•	Up: indices 18–26 (positions 19-27)
+	•	… and so on.
+
+Target Definitions:
+	•	Pieces and Levels:
+The script defines several groups of pieces (pieces_level1, pieces_level2, pieces_level3) based on their expected positions and colors. These are later merged into three levels (E1, E2, E3).
+	•	Allowed Moves:
+The list allowed_moves_global defines the set of permissible moves (e.g., “F”, “Fb”, “U”, “Ub”, etc.) which are used during the candidate search process.
+
+⸻
+
+6. Cube State Manipulation
+
+Functions for Rotation and Canonical Hashing:
+
+rotate_face(face)
+	•	Purpose:
+Rotates a single face (a list of 9 elements) by rearranging the indices.
+	•	Mechanism:
+The function uses a hard-coded mapping to rotate the face 90° clockwise.
+
+rotate_state(cube_state, k)
+	•	Purpose:
+Rotates the entire cube state.
+	•	Details:
+	•	The function splits the cube state into its constituent faces (front, left, up, right, down, back).
+	•	For k % 4 iterations (handling full rotations), it rotates the faces accordingly.
+	•	The function returns a new cube state by concatenating the rotated faces.
+
+canonical_state_hash(cube_state)
+	•	Purpose:
+Generates a canonical hash for the cube state.
+	•	Mechanism:
+	•	It applies rotations (via rotate_state) for all four possible orientations.
+	•	For each orientation, the state is converted into a string.
+	•	The lexicographically smallest string (the canonical representation) is chosen.
+	•	An MD5 hash is computed from this canonical representation.
+	•	Usage:
+This hash is used to prevent processing the same cube state multiple times (duplicate detection).
+
+⸻
+
+7. Helper Functions
+
+Loading and Processing the Cube State:
+	•	load_cube_from_csv()
+Reads the cube’s starting state from csv_export-StartPos.csv.
+It ensures that exactly 54 color codes are loaded.
+
+Moves Mapping and Execution:
+	•	load_mappings(filename="mappings.json")
+Loads a JSON file that maps each move to its effect on the cube’s indices.
+	•	generate_inverse_dict(moves_mapping)
+Creates a dictionary that maps each move to its inverse move (e.g., “F” ↔ “Fb”) to avoid undoing moves immediately.
+	•	apply_move(cube_state, move, moves_mapping)
+Applies a single move to a copy of the cube state using the mappings.
+	•	apply_sequence(cube_state, sequence, moves_mapping)
+Applies a sequence of moves in order to transform the cube state.
+	•	is_inverse(move1, move2, inverse_dict)
+Checks if two moves are inverses of each other.
+
+String Representation:
+	•	cube_to_string(cube_state)
+Formats the cube state into a human-readable multi-line string that visually represents the cube faces.
+
+Evaluation and Formatting:
+	•	get_correct_pieces(cube_state, target_pieces)
+Returns a set of pieces that are in the correct position and color as defined in the target configuration.
+	•	count_correct_pieces(cube_state, target_pieces)
+Counts the number of correctly positioned pieces.
+	•	format_with_thousands(number)
+Formats a number with thousand separators for readability.
+
+Move Damage and Allowed Moves Mix:
+	•	calculate_move_damage(state, locked, move, moves_mapping, target_pieces)
+Estimates the “damage” a move might do to pieces that are already correct (i.e., “locked”).
+	•	compute_allowed_moves_mix(allowed_moves_global, variability)
+Selects a subset of allowed moves based on a variability parameter. Moves are paired with their inverses, and a random sample of these pairs is chosen.
+	•	generate_random_sequence_custom(length, allowed_moves_mix, inverse_dict, damaging_move)
+Generates a random sequence of moves while avoiding moves that immediately undo the previous move.
+
+⸻
+
+8. Candidate Search Mechanism
+
+Function: candidate_search_bundle(...)
+	•	Purpose:
+Generates a batch of candidate move sequences from the current best state.
+	•	Details:
+	•	It uses a loop to generate several candidate sequences (up to a specified number of attempts).
+	•	For each candidate, a random sequence is generated and applied to the cube state.
+	•	It then checks whether the “locked” pieces (pieces that were already correct) remain unchanged.
+	•	If a candidate improves the number of correctly positioned pieces, it is considered a potential best candidate.
+	•	Return:
+The function returns the best candidate (if any) as a tuple containing the improved count, the new cube state, and the move sequence used.
+
+⸻
+
+9. Logging Improvements
+
+Function: log_improvement(...)
+	•	Purpose:
+Logs every improvement in the cube state into the Improvements.csv file.
+	•	Mechanism:
+	•	Checks whether the current cube state (identified by its canonical hash) has already been logged.
+	•	If it is a new improvement, the function appends a row with detailed information:
+	•	Date, time, count of correct pieces before and after improvement.
+	•	The move sequence applied.
+	•	The number of moves, positions improved, a calculated “value” (ratio), and the hash.
+	•	Importance:
+This logging mechanism prevents duplicate work and serves as a historical record of improvements.
+
+⸻
+
+10. Main Program and Multi-Processing
+
+Main Loop (main()):
+	•	Structure:
+	•	Parameter and Cube State Initialization:
+For each run (up to TOTAL_RUNS), a random parameter set is chosen, and the cube’s initial state is loaded.
+	•	Multi-Level Improvement:
+The optimization process is divided into levels (E1, E2, E3), each with its own target (number of correct pieces). The process iterates through each level sequentially.
+	•	Parallel Candidate Search:
+A ProcessPoolExecutor is used to run the candidate search in parallel, greatly speeding up the process.
+	•	Move Sequence Management:
+The algorithm maintains a cumulative move sequence that transforms the cube state from the starting configuration to the best found configuration.
+	•	Result Logging:
+After completing a run, detailed results (including runtime, final correct pieces, and move sequences) are logged into the Results.csv file. A separate text log is also saved.
+	•	Key Points:
+	•	The candidate search is performed in batches, and the algorithm gradually increases the length of the move sequence if no improvement is found.
+	•	The use of multi-processing allows for simultaneous exploration of different candidate sequences.
+
+Multi-Processing:
+	•	The script uses the concurrent.futures.ProcessPoolExecutor to dispatch candidate search jobs to multiple CPU cores.
+	•	Each process works independently on a candidate bundle, and the best candidate from each batch is compared against the current best state.
+
+⸻
+
+11. How to Run the Script
+	•	Prerequisites:
+Ensure that Python 3 is installed and that the following files are available in the same directory as the script:
+	•	parameter_csv-Parameter.csv
+	•	csv_export-StartPos.csv
+	•	mappings.json
+	•	Execution:
+Run the script from the command line:
+
+./script_name.py
+
+(Replace script_name.py with the actual file name of the script.)
+
+	•	Output:
+	•	Detailed logs are printed to the console.
+	•	Improvement details are appended to Improvements.csv.
+	•	Summary results for each run are recorded in Results.csv.
+	•	A separate text file is generated for each run containing the complete log of that run.
+
+⸻
+
+12. Summary
+
+This script is a sophisticated tool designed for optimizing a cube’s configuration. By combining:
+	•	External parameter management,
+	•	Detailed cube state manipulation,
+	•	A randomized candidate search strategy with move damage estimation,
+	•	And parallel processing,
+
+the script incrementally improves the cube state and logs all improvements for later analysis. The use of canonical state hashing ensures that duplicate states are avoided, making the search process more efficient.
+
+This documentation should provide a comprehensive understanding of every aspect of the script—from initial parameter loading to final result logging—and serves as a reference for further development or modification.
