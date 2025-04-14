@@ -350,6 +350,6 @@ r r r | w w w | o o o
         y y y
 
 Anzahl korrekt positionierter Steine (E3 bzw. beste Lösung): 20
-Gesamtzugfolge: L Bb F Lb Db L L Db Lb B Fb Rb Bb F L D Lb Lb B D B B L B Bb Rb U B Rb Rb Rb U Bb Ub B U R B R Bb Rb Ub Bb Bb Bb L B U B Ub Lb Rb Fb Rb B R F Bb R Lb D L D B Db Bb D Lb Ub L Db Lb U L D L D Lb D Fb Rb Db R D F Rb D L Db R D Lb Db Lb Fb Lb Lb Rb Lb Rb Rb Rb Lb Lb Lb Lb Lb R F L Fb Rb F
+Gesamtzugfolge: 	
 Anzahl Züge: 113
 Laufzeit: 533.31 Sekunden
