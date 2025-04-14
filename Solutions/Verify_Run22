@@ -1,0 +1,137 @@
+===== Programmlauf 22 von 200 =====
+Verwendetes Parameter-Set: P1
+----- Startposition des Würfels -----
+        o g g
+        o g r
+        o r w
+w b w | b g r | b w r
+b r b | y w r | b o y
+g o b | y w b | o o g
+        r g y
+        g b y
+        y o y
+        o w r
+        w y r
+        g y w
+        
+Gesamtzugfolge: B B D F Rb Rb L B Lb Lb F L Db R D Rb F Rb Db R Fb Db F Lb Lb Db L D L L F Lb Fb Bb Db Rb B R B Db Fb Lb Fb L D F Db Db Bb L B Lb B D Bb Db Db Fb Db F D L D Lb Db Bb Db Lb D L B R F Lb Fb Rb F L Fb L Bb L L L F L Bb Bb Bb Lb F F B F Bb Fb Fb Fb Fb
+Anzahl Züge: 99
+
+*** Endergebnis für Lauf 22 ***
+Positionen der Steine:
+        g g g
+        g g g
+        g g g
+r r r | w w w | o o o
+r r r | w w w | o o o
+r r r | w w w | o o o
+        b b b
+        b b b
+        b b b
+        y y y
+        y y y
+        y y y
+        
+ ######################################################
+        
+Verifikation in TestMoves.py (alte Notation)
+----- Cube Starting Position -----
+        o g g
+        o g r
+        o r w
+w b w | b g r | b w r
+b r b | y w r | b o y
+g o b | y w b | o o g
+        r g y
+        g b y
+        y o y
+        o w r
+        w y r
+        g y w
+
+Enter a sequence of moves (or 'stop'): B B D F Rb Rb L B Lb Lb F L Db R D Rb F Rb Db R Fb Db F Lb Lb Db L D L L F Lb Fb Bb Db Rb B R B Db Fb Lb Fb L D F Db Db Bb L B Lb B D Bb Db Db Fb Db F D L D Lb Db Bb Db Lb D L B R F Lb Fb Rb F L Fb L Bb L L L F L Bb Bb Bb Lb F F B F Bb Fb Fb Fb Fb
+
+----- Current Cube Position -----
+        g g g
+        g g g
+        g g g
+r r r | w w w | o o o
+r r r | w w w | o o o
+r r r | w w w | o o o
+        b b b
+        b b b
+        b b b
+        y y y
+        y y y
+        y y y
+
+ ######################################################
+
+Verifiktaion in Test_Moves_HTM.py (HTM Notation)
+
+Transformation
+
+🔄 Reading move sequence from clipboard …
+
+🔄 Reading move sequence from clipboard …
+
+📥 Original sequence (old notation):
+B B D F Rb Rb L B Lb Lb F L Db R D Rb F Rb Db R Fb Db F Lb Lb Db L D L L F Lb Fb Bb Db Rb B R B Db Fb Lb Fb L D F Db Db Bb L B Lb B D Bb Db Db Fb Db F D L D Lb Db Bb Db Lb D L B R F Lb Fb Rb F L Fb L Bb L L L F L Bb Bb Bb Lb F F B F Bb Fb Fb Fb Fb
+🔢 Number of moves (old notation): 99
+
+📥 Converted sequence (HTM converted):
+B B D F R' R' L B L' L' F L D' R D R' F R' D' R F' D' F L' L' D' L D L L F L' F' B' D' R' B R B D' F' L' F' L D F D' D' B' L B L' B D B' D' D' F' D' F D L D L' D' B' D' L' D L B R F L' F' R' F L F' L B' L L L F L B' B' B' L' F F B F B' F' F' F' F'
+🔢 Number of moves (HTM converted): 99
+
+📋 Applied transformations:
+ - B B → B2
+ - R' R' → R2
+ - L' L' → L2
+ - L' L' → L2
+ - L L → L2
+ - D' D' → D2
+ - D' D' → D2
+ - L L L → L'
+ - B' B' B' → B
+ - F F → F2
+ - F' F' F' F' → deleted
+
+✅ Final transformed sequence (HTM notation):
+B2 D F R2 L B L2 F L D' R D R' F R' D' R F' D' F L2 D' L D L2 F L' F' B' D' R' B R B D' F' L' F' L D F D2 B' L B L' B D B' D2 F' D' F D L D L' D' B' D' L' D L B R F L' F' R' F L F' L B' L' F L B L' F2 B F B'
+🔢 Number of moves (final HTM notation): 83
+(base) steffenkraft@Mac 00_Tools % 
+
+
+
+
+----- Cube Starting Position -----
+        o g g
+        o g r
+        o r w
+w b w | b g r | b w r
+b r b | y w r | b o y
+g o b | y w b | o o g
+        r g y
+        g b y
+        y o y
+        o w r
+        w y r
+        g y w
+
+Enter a sequence of moves in HTM notation (or 'stop'): B2 D F R2 L B L2 F L D' R D R' F R' D' R F' D' F L2 D' L D L2 F L' F' B' D' R' B R B D' F' L' F' L D F D2 B' L B L' B D B' D2 F' D' F D L D L' D' B' D' L' D L B R F L' F' R' F L F' L B' L' F L B L' F2 B F B'
+
+----- Current Cube Position -----
+        g g g
+        g g g
+        g g g
+r r r | w w w | o o o
+r r r | w w w | o o o
+r r r | w w w | o o o
+        b b b
+        b b b
+        b b b
+        y y y
+        y y y
+        y y y
+
+Enter a sequence of moves in HTM notation (or 'stop'): 
